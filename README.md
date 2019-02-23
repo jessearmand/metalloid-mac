@@ -4,15 +4,13 @@ To practice building up modern metal mac app from scratch. It will progress by s
 
 ## Motivation
 
-Trial and error, learning by doing.
+Trial and error, learning by doing. Inspired by [Metal by Example](http://metalbyexample.com/modern-metal-2/).
 
 It can be quite difficult to understand Metal without a good foundation in computer graphics programming. Although there's a lot of code samples, they can omit certain details that could only be understood once we experiment by actually writing the code step-by-step according to how we understand it.
 
 ## 3D Models
 
-Sample 3D models are from [TurboSquid](https://www.turbosquid.com/Search/3D-Models)
-
-Inspired by [Metal by Example](http://metalbyexample.com/modern-metal-2/).
+Sample 3D models are from [TurboSquid](https://www.turbosquid.com/Search/3D-Models).
 
 ## Why on the Mac
 
