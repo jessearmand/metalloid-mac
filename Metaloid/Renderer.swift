@@ -30,17 +30,20 @@ struct FragmentUniforms {
 final class Renderer: NSObject {
     let view: MTKView
     let device: MTLDevice?
-    let commandQueue: MTLCommandQueue?
+    let vertexDescriptor: MDLVertexDescriptor
+    let renderPipeline: MTLRenderPipelineState
+    let depthStencilState: MTLDepthStencilState
+    let samplerState: MTLSamplerState
 
-    var vertexDescriptor: MDLVertexDescriptor
     var meshes: [MTKMesh] = []
-
-    var renderPipeline: MTLRenderPipelineState?
     var time: Float = 0
 
-    let depthStencilState: MTLDepthStencilState
+    let commandQueue: MTLCommandQueue?
     var baseColorTexture: MTLTexture?
-    let samplerState: MTLSamplerState
+
+    var viewMatrix = matrix_identity_float4x4
+    var projectionMatrix = matrix_identity_float4x4
+    let cameraWorldPosition = float3(0, 0, 2)
 
     init(withView view: MTKView, device: MTLDevice?) {
         self.view = view
@@ -149,27 +152,26 @@ extension Renderer: MTKViewDelegate {
     }
 
     func draw(in view: MTKView) {
+        time += 1 / Float(view.preferredFramesPerSecond)
+        let angle = -time
+        let modelMatrix = float4x4(rotationAbout: float3(0, 1, 0), by: angle) *  float4x4(scaleBy: 1)
+
+        let viewMatrix = float4x4(translationBy: -cameraWorldPosition)
+
+        let aspectRatio = Float(view.drawableSize.width / view.drawableSize.height)
+        let projectionMatrix = float4x4(perspectiveProjectionFov: Float.pi/3, aspectRatio: aspectRatio, nearZ: 0.1, farZ: 100)
+        let viewProjectionMatrix = projectionMatrix * viewMatrix
+        var vertexUniforms = VertexUniforms(
+            viewProjectionMatrix: viewProjectionMatrix,
+            modelMatrix: modelMatrix,
+            normalMatrix: modelMatrix.normalMatrix
+        )
+
         let commandBuffer = commandQueue?.makeCommandBuffer()
 
         if let renderPassDescriptor = view.currentRenderPassDescriptor, let drawable = view.currentDrawable {
             let commandEncoder = commandBuffer?.makeRenderCommandEncoder(descriptor: renderPassDescriptor)
             commandEncoder?.setDepthStencilState(depthStencilState)
-
-            time += 1 / Float(view.preferredFramesPerSecond)
-            let angle = -time
-            let modelMatrix = float4x4(rotationAbout: float3(0, 1, 0), by: angle) *  float4x4(scaleBy: 1)
-
-            let cameraWorldPosition = float3(0, 0, 2)
-            let viewMatrix = float4x4(translationBy: -cameraWorldPosition)
-
-            let aspectRatio = Float(view.drawableSize.width / view.drawableSize.height)
-            let projectionMatrix = float4x4(perspectiveProjectionFov: Float.pi / 3, aspectRatio: aspectRatio, nearZ: 0.1, farZ: 100)
-            let viewProjectionMatrix = projectionMatrix * viewMatrix
-            var vertexUniforms = VertexUniforms(
-                viewProjectionMatrix: viewProjectionMatrix,
-                modelMatrix: modelMatrix,
-                normalMatrix: modelMatrix.normalMatrix
-            )
             commandEncoder?.setVertexBytes(&vertexUniforms, length: MemoryLayout<VertexUniforms>.size, index: 1)
 
             let material = Material()
@@ -192,11 +194,7 @@ extension Renderer: MTKViewDelegate {
             commandEncoder?.setFragmentTexture(baseColorTexture, index: 0)
             commandEncoder?.setFragmentSamplerState(samplerState, index: 0)
 
-            guard let pipeline = renderPipeline else {
-                fatalError("render pipeline is not setup")
-            }
-
-            commandEncoder?.setRenderPipelineState(pipeline)
+            commandEncoder?.setRenderPipelineState(renderPipeline)
 
             for mesh in meshes {
                 guard let vertexBuffer = mesh.vertexBuffers.first else {
