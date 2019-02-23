@@ -74,7 +74,6 @@
 				01EC6FA72221A453009335B4 /* Scene.swift */,
 				01F9DAFB2219579400D46297 /* AppDelegate.swift */,
 				01F9DAFD2219579400D46297 /* MetalViewController.swift */,
-				01F9DAFF2219579600D46297 /* Assets.xcassets */,
 				01F9DB012219579600D46297 /* Main.storyboard */,
 				01F9DB042219579600D46297 /* Info.plist */,
 				01F9DB052219579600D46297 /* Metaloid.entitlements */,
@@ -85,6 +84,7 @@
 		01F9DB0B2219580300D46297 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				01F9DAFF2219579600D46297 /* Assets.xcassets */,
 				01EC6FA5221DA0C0009335B4 /* teapot.obj */,
 				01F9DB0C2219580300D46297 /* formica_rufa.obj */,
 				01F9DB0D2219580300D46297 /* formica_rufa.mtl */,
