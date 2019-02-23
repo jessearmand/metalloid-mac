@@ -23,7 +23,7 @@
 /* Begin PBXFileReference section */
 		01EC6FA5221DA0C0009335B4 /* teapot.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = teapot.obj; sourceTree = "<group>"; };
 		01EC6FA72221A453009335B4 /* Scene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scene.swift; sourceTree = "<group>"; };
-		01F9DAF82219579400D46297 /* Metaloid.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Metaloid.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		01F9DAF82219579400D46297 /* Metalloid.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Metalloid.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		01F9DAFB2219579400D46297 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		01F9DAFD2219579400D46297 /* MetalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalViewController.swift; sourceTree = "<group>"; };
 		01F9DAFF2219579600D46297 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -60,7 +60,7 @@
 		01F9DAF92219579400D46297 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				01F9DAF82219579400D46297 /* Metaloid.app */,
+				01F9DAF82219579400D46297 /* Metalloid.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,9 +95,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		01F9DAF72219579400D46297 /* Metaloid */ = {
+		01F9DAF72219579400D46297 /* Metalloid */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 01F9DB082219579600D46297 /* Build configuration list for PBXNativeTarget "Metaloid" */;
+			buildConfigurationList = 01F9DB082219579600D46297 /* Build configuration list for PBXNativeTarget "Metalloid" */;
 			buildPhases = (
 				01F9DAF42219579400D46297 /* Sources */,
 				01F9DAF52219579400D46297 /* Frameworks */,
@@ -107,9 +107,9 @@
 			);
 			dependencies = (
 			);
-			name = Metaloid;
+			name = Metalloid;
 			productName = Metaloid;
-			productReference = 01F9DAF82219579400D46297 /* Metaloid.app */;
+			productReference = 01F9DAF82219579400D46297 /* Metalloid.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -127,7 +127,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 01F9DAF32219579400D46297 /* Build configuration list for PBXProject "Metaloid" */;
+			buildConfigurationList = 01F9DAF32219579400D46297 /* Build configuration list for PBXProject "Metalloid" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -140,7 +140,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				01F9DAF72219579400D46297 /* Metaloid */,
+				01F9DAF72219579400D46297 /* Metalloid */,
 			);
 		};
 /* End PBXProject section */
@@ -344,7 +344,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		01F9DAF32219579400D46297 /* Build configuration list for PBXProject "Metaloid" */ = {
+		01F9DAF32219579400D46297 /* Build configuration list for PBXProject "Metalloid" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				01F9DB062219579600D46297 /* Debug */,
@@ -353,7 +353,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		01F9DB082219579600D46297 /* Build configuration list for PBXNativeTarget "Metaloid" */ = {
+		01F9DB082219579600D46297 /* Build configuration list for PBXNativeTarget "Metalloid" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				01F9DB092219579600D46297 /* Debug */,
