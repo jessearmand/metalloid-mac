@@ -43,7 +43,7 @@ final class Renderer: NSObject {
 
     var viewMatrix = matrix_identity_float4x4
     var projectionMatrix = matrix_identity_float4x4
-    let cameraWorldPosition = float3(0, 0, 2)
+    var cameraWorldPosition = float3(0, 0, 2)
 
     init(withView view: MTKView, device: MTLDevice?) {
         self.view = view
@@ -154,13 +154,14 @@ extension Renderer: MTKViewDelegate {
     func draw(in view: MTKView) {
         time += 1 / Float(view.preferredFramesPerSecond)
         let angle = -time
-        let modelMatrix = float4x4(rotationAbout: float3(0, 1, 0), by: angle) *  float4x4(scaleBy: 1)
+        let modelMatrix = float4x4(scaleBy: 1.0)
 
-        let viewMatrix = float4x4(translationBy: -cameraWorldPosition)
+        cameraWorldPosition = float3(0, 0, 2)
+        viewMatrix = float4x4(translationBy: -cameraWorldPosition) * float4x4(rotationAbout: float3(0, 1, 0), by: angle)
 
         let aspectRatio = Float(view.drawableSize.width / view.drawableSize.height)
-        let projectionMatrix = float4x4(perspectiveProjectionFov: Float.pi/3, aspectRatio: aspectRatio, nearZ: 0.1, farZ: 100)
-        let viewProjectionMatrix = projectionMatrix * viewMatrix
+        projectionMatrix = float4x4(perspectiveProjectionFov: Float.pi/3, aspectRatio: aspectRatio, nearZ: 0.1, farZ: 100)
+        let viewProjectionMatrix =  projectionMatrix * viewMatrix
         var vertexUniforms = VertexUniforms(
             viewProjectionMatrix: viewProjectionMatrix,
             modelMatrix: modelMatrix,
