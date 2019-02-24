@@ -31,7 +31,7 @@
 		01F9DAFF2219579600D46297 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		01F9DB022219579600D46297 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		01F9DB042219579600D46297 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		01F9DB052219579600D46297 /* Metaloid.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Metaloid.entitlements; sourceTree = "<group>"; };
+		01F9DB052219579600D46297 /* Metalloid.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Metalloid.entitlements; sourceTree = "<group>"; };
 		01F9DB0C2219580300D46297 /* formica_rufa.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = formica_rufa.obj; sourceTree = "<group>"; };
 		01F9DB0D2219580300D46297 /* formica_rufa.mtl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = formica_rufa.mtl; sourceTree = "<group>"; };
 		01F9DB122219585D00D46297 /* Renderer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
@@ -50,11 +50,51 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		01EC6FAB2222C7F8009335B4 /* Scene */ = {
+			isa = PBXGroup;
+			children = (
+				01EC6FA72221A453009335B4 /* Scene.swift */,
+				01EC6FA9222216B1009335B4 /* Node.swift */,
+			);
+			path = Scene;
+			sourceTree = "<group>";
+		};
+		01EC6FAC2222C81E009335B4 /* Renderer */ = {
+			isa = PBXGroup;
+			children = (
+				01F9DB122219585D00D46297 /* Renderer.swift */,
+				01F9DB142219585D00D46297 /* Shaders.metal */,
+			);
+			path = Renderer;
+			sourceTree = "<group>";
+		};
+		01EC6FAD2222C83F009335B4 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				01F9DB132219585D00D46297 /* MathUtilities.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		01EC6FAE2222C8A6009335B4 /* Meshes */ = {
+			isa = PBXGroup;
+			children = (
+				01EC6FA5221DA0C0009335B4 /* teapot.obj */,
+				01F9DB0C2219580300D46297 /* formica_rufa.obj */,
+				01F9DB0D2219580300D46297 /* formica_rufa.mtl */,
+			);
+			path = Meshes;
+			sourceTree = "<group>";
+		};
 		01F9DAEF2219579400D46297 = {
 			isa = PBXGroup;
 			children = (
+				01EC6FAE2222C8A6009335B4 /* Meshes */,
 				01F9DB0B2219580300D46297 /* Resources */,
-				01F9DAFA2219579400D46297 /* Metaloid */,
+				01EC6FAD2222C83F009335B4 /* Utilities */,
+				01EC6FAB2222C7F8009335B4 /* Scene */,
+				01EC6FAC2222C81E009335B4 /* Renderer */,
+				01F9DAFA2219579400D46297 /* App */,
 				01F9DAF92219579400D46297 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -67,30 +107,22 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		01F9DAFA2219579400D46297 /* Metaloid */ = {
+		01F9DAFA2219579400D46297 /* App */ = {
 			isa = PBXGroup;
 			children = (
-				01F9DB132219585D00D46297 /* MathUtilities.swift */,
-				01F9DB122219585D00D46297 /* Renderer.swift */,
-				01F9DB142219585D00D46297 /* Shaders.metal */,
-				01EC6FA72221A453009335B4 /* Scene.swift */,
-				01EC6FA9222216B1009335B4 /* Node.swift */,
 				01F9DAFB2219579400D46297 /* AppDelegate.swift */,
 				01F9DAFD2219579400D46297 /* MetalViewController.swift */,
-				01F9DB012219579600D46297 /* Main.storyboard */,
-				01F9DB042219579600D46297 /* Info.plist */,
-				01F9DB052219579600D46297 /* Metaloid.entitlements */,
 			);
-			path = Metaloid;
+			path = App;
 			sourceTree = "<group>";
 		};
 		01F9DB0B2219580300D46297 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				01F9DB012219579600D46297 /* Main.storyboard */,
+				01F9DB042219579600D46297 /* Info.plist */,
+				01F9DB052219579600D46297 /* Metalloid.entitlements */,
 				01F9DAFF2219579600D46297 /* Assets.xcassets */,
-				01EC6FA5221DA0C0009335B4 /* teapot.obj */,
-				01F9DB0C2219580300D46297 /* formica_rufa.obj */,
-				01F9DB0D2219580300D46297 /* formica_rufa.mtl */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -311,16 +343,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Metaloid/Metaloid.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Resources/Metalloid.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 23D893942X;
-				INFOPLIST_FILE = Metaloid/Info.plist;
+				INFOPLIST_FILE = Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jessearmand.Metaloid;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jessearmand.Metalloid;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 			};
@@ -330,16 +362,16 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = Metaloid/Metaloid.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Resources/Metalloid.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 23D893942X;
-				INFOPLIST_FILE = Metaloid/Info.plist;
+				INFOPLIST_FILE = Resources/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jessearmand.Metaloid;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jessearmand.Metalloid;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.2;
 			};
