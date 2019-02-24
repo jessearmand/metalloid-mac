@@ -10,7 +10,11 @@ It can be quite difficult to understand Metal without a good foundation in compu
 
 ## 3D Models
 
-Sample 3D models are from [TurboSquid](https://www.turbosquid.com/Search/3D-Models).
+Sample 3D models are royalty-free licensed models from [TurboSquid](https://www.turbosquid.com/Search/3D-Models).
+
+* [formica rufa ant](https://www.turbosquid.com/3d-models/3d-model-formica-rufa-ant/388875)
+* The rest are from [Metal by Example](http://metalbyexample.com/modern-metal-2/)
+
 
 ## Why on the Mac
 
