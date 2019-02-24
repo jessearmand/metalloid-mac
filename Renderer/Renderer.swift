@@ -161,6 +161,9 @@ extension Renderer: MTKViewDelegate {
         let commandBuffer = commandQueue?.makeCommandBuffer()
 
         if let renderPassDescriptor = view.currentRenderPassDescriptor, let drawable = view.currentDrawable {
+            renderPassDescriptor.colorAttachments[0].texture = drawable.texture
+            renderPassDescriptor.colorAttachments[0].loadAction = .clear
+            renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
             guard let commandEncoder = commandBuffer?.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
                 fatalError("No command encoder for rendering")
             }
