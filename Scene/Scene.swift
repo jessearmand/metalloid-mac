@@ -37,6 +37,22 @@ extension Scene {
 
         let modelMatrix = float4x4(scaleBy: 1.0)
         rootNode.modelMatrix = modelMatrix
+
+        let childNodeBaseTransform = float4x4(rotationAbout: float3(0, 0, 1), by: -.pi / 2) * float4x4(scaleBy: 0.25)
+        for index in 1...Renderer.antCount {
+            if let antChildNode = rootNode.nodeNamedRecursive("formica_rufa_\(index)") {
+                let pivotPosition = float3(0.4, 0, 0)
+                let rotationOffset = float3(0.4, 0, 0)
+                let rotationSpeed = Float(0.3)
+                let rotationAngle = 2 * Float.pi * Float(rotationSpeed * time) + (2 * .pi / Float(Renderer.antCount) * Float(index - 1))
+                let horizontalAngle = 2 * .pi / Float(Renderer.antCount) * Float(index - 1)
+                antChildNode.modelMatrix = float4x4(rotationAbout: float3(0, 1, 0), by: horizontalAngle) *
+                    float4x4(translationBy: rotationOffset) *
+                    float4x4(rotationAbout: float3(0, 0, 1), by: rotationAngle) *
+                    float4x4(translationBy: pivotPosition) *
+                childNodeBaseTransform
+            }
+        }
     }
 
     func drawRecursive(node: Node,

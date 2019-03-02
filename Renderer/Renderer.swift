@@ -42,6 +42,8 @@ final class Renderer: NSObject {
     let commandQueue: MTLCommandQueue?
     var baseColorTexture: MTLTexture?
 
+    static var antCount = 10
+
     init(withView view: MTKView, device: MTLDevice?) {
         self.view = view
         self.device = device
@@ -101,7 +103,7 @@ final class Renderer: NSObject {
 
         let scene = Scene()
 
-        let node = Node(name: "formica_rufa")
+        let centralNode = Node(name: "formica_rufa")
         let modelURL = Bundle.main.url(forResource: "formica_rufa", withExtension: "obj")
         let asset = MDLAsset(url: modelURL, vertexDescriptor: vertexDescriptor, bufferAllocator: bufferAllocator)
 
@@ -111,13 +113,24 @@ final class Renderer: NSObject {
         scene.lights = [light0, light1, light2]
 
         do {
-            node.mesh = try MTKMesh.newMeshes(asset: asset, device: device).metalKitMeshes.first
-            node.material.baseColorTexture = try textureLoader.newTexture(name: "texture", scaleFactor: 1.0, bundle: nil, options: options)
-            node.material.specularPower = 200
-            node.material.specularColor = float3(0.8, 0.8, 0.8)
-            scene.rootNode.children.append(node)
+            centralNode.mesh = try MTKMesh.newMeshes(asset: asset, device: device).metalKitMeshes.first
+            centralNode.material.baseColorTexture = try textureLoader.newTexture(name: "texture", scaleFactor: 1.0, bundle: nil, options: options)
+            centralNode.material.specularPower = 200
+            centralNode.material.specularColor = float3(0.8, 0.8, 0.8)
+            scene.rootNode.children.append(centralNode)
         } catch let error {
             fatalError("\(error)")
+        }
+
+        for index in 1...Renderer.antCount {
+            if let node = try? Node.createChildNode(
+                withName: "formica_rufa_\(index)",
+                modelURL: modelURL,
+                vertexDescriptor: vertexDescriptor,
+                device: device) {
+
+                centralNode.children.append(node)
+            }
         }
 
         return scene
