@@ -180,6 +180,8 @@ extension Renderer: MTKViewDelegate {
                 fatalError("No command encoder for rendering")
             }
 
+            commandEncoder.setFrontFacing(.counterClockwise)
+            commandEncoder.setCullMode(.back)
             commandEncoder.setDepthStencilState(depthStencilState)
             commandEncoder.setFragmentSamplerState(samplerState, index: 0)
             commandEncoder.setRenderPipelineState(renderPipeline)
