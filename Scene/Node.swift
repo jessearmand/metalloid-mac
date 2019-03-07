@@ -35,22 +35,25 @@ extension Node {
             .first
     }
 
-    static func createChildNode(withName name: String,
-                         modelURL: URL?,
-                         vertexDescriptor: MDLVertexDescriptor,
-                         device: MTLDevice) throws -> Node {
-
-        let bufferAllocator: MTKMeshBufferAllocator = MTKMeshBufferAllocator(device: device)
-        let textureLoader = MTKTextureLoader(device: device)
+    static func createChildNode(
+        withName name: String,
+        modelURL: URL?,
+        textureName: String,
+        specularPower: Float,
+        specularColor: float3,
+        device: MTLDevice,
+        vertexDescriptor: MDLVertexDescriptor,
+        bufferAllocator: MTKMeshBufferAllocator,
+        textureLoader: MTKTextureLoader) throws -> Node {
         let options: [MTKTextureLoader.Option : Any] = [.generateMipmaps : true, .SRGB : true]
 
         let node = Node(name: name)
         let asset = MDLAsset(url: modelURL, vertexDescriptor: vertexDescriptor, bufferAllocator: bufferAllocator)
 
         node.mesh = try MTKMesh.newMeshes(asset: asset, device: device).metalKitMeshes.first
-        node.material.baseColorTexture = try textureLoader.newTexture(name: "texture", scaleFactor: 1.0, bundle: nil, options: options)
-        node.material.specularPower = 40
-        node.material.specularColor = float3(0.8, 0.8, 0.8)
+        node.material.baseColorTexture = try textureLoader.newTexture(name: textureName, scaleFactor: 1.0, bundle: nil, options: options)
+        node.material.specularPower = specularPower
+        node.material.specularColor = specularColor
         return node
     }
 }

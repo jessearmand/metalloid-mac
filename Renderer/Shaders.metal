@@ -23,8 +23,8 @@ struct VertexOut {
 };
 
 struct VertexUniforms {
-    float4x4 modelMatrix;
     float4x4 viewProjectionMatrix;
+    float4x4 modelMatrix;
     float3x3 normalMatrix;
 };
 
@@ -58,7 +58,8 @@ vertex VertexOut vertex_main(VertexIn vertexIn [[stage_in]],
 fragment float4 fragment_main(VertexOut fragmentIn [[stage_in]],
                               constant FragmentUniforms &uniforms [[buffer(0)]],
                               texture2d<float, access::sample> baseColorTexture [[texture(0)]],
-                              sampler baseColorSampler [[sampler(0)]]) {
+                              sampler baseColorSampler [[sampler(0)]])
+{
     float3 baseColor = baseColorTexture.sample(baseColorSampler, fragmentIn.texCoords).rgb;
     float3 specularColor = uniforms.specularColor;
     float3 N = normalize(fragmentIn.worldNormal.xyz);

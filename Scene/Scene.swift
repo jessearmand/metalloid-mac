@@ -30,23 +30,30 @@ final class Scene {
 
 extension Scene {
     func update(time: Float, aspectRatio: Float) {
-        projectionMatrix = float4x4(perspectiveProjectionFov: Float.pi/3, aspectRatio: aspectRatio, nearZ: 0.1, farZ: 100)
+        cameraWorldPosition = float3(0, 0, 3)
+        viewMatrix = float4x4(translationBy: -cameraWorldPosition) * float4x4(rotationAbout: float3(1, 0, 0), by: .pi / 6)
+        projectionMatrix = float4x4(perspectiveProjectionFov: Float.pi / 6, aspectRatio: aspectRatio, nearZ: 0.1, farZ: 100)
 
-        let angle = time
-        viewMatrix = float4x4(translationBy: -cameraWorldPosition) * float4x4(rotationAbout: float3(0, 1, 0), by: angle)
+        let angle = -time
+        rootNode.modelMatrix = float4x4(rotationAbout: float3(0, 1, 0), by: angle)
 
-        let modelMatrix = float4x4(scaleBy: 1.0)
-        rootNode.modelMatrix = modelMatrix
+        if let centralNode = rootNode.nodeNamedRecursive("formica_rufa") {
+            centralNode.modelMatrix = float4x4(scaleBy: 0.5)
+        }
 
-        let childNodeBaseTransform = float4x4(rotationAbout: float3(0, 0, 1), by: -.pi / 2) * float4x4(scaleBy: 0.25)
-        for index in 1...Renderer.antCount {
-            if let antChildNode = rootNode.nodeNamedRecursive("formica_rufa_\(index)") {
+        let childNodeBaseTransform =
+            float4x4(rotationAbout: float3(0, 0, 1), by: -.pi / 2) *
+            float4x4(scaleBy: 0.25) *
+            float4x4(rotationAbout: float3(0, 1, 0), by: -.pi / 2)
+
+        for index in 1...Renderer.childNodeCount {
+            if let childNode = rootNode.nodeNamedRecursive("formica_rufa_\(index)") {
                 let pivotPosition = float3(0.4, 0, 0)
-                let rotationOffset = float3(0.4, 0, 0)
+                let rotationOffset = float3(2.4, 0, 0)
                 let rotationSpeed = Float(0.3)
-                let rotationAngle = 2 * Float.pi * Float(rotationSpeed * time) + (2 * .pi / Float(Renderer.antCount) * Float(index - 1))
-                let horizontalAngle = 2 * .pi / Float(Renderer.antCount) * Float(index - 1)
-                antChildNode.modelMatrix = float4x4(rotationAbout: float3(0, 1, 0), by: horizontalAngle) *
+                let rotationAngle = 2 * Float.pi * Float(rotationSpeed * time) + (2 * .pi / Float(Renderer.childNodeCount) * Float(index - 1))
+                let horizontalAngle = 2 * .pi / Float(Renderer.childNodeCount) * Float(index - 1)
+                childNode.modelMatrix = float4x4(rotationAbout: float3(0, 1, 0), by: horizontalAngle) *
                     float4x4(translationBy: rotationOffset) *
                     float4x4(rotationAbout: float3(0, 0, 1), by: rotationAngle) *
                     float4x4(translationBy: pivotPosition) *
@@ -55,30 +62,29 @@ extension Scene {
         }
     }
 
-    func drawRecursive(node: Node,
-                       parentTransform: float4x4,
-                       commandEncoder: MTLRenderCommandEncoder) {
+    func drawRecursive(node: Node, parentTransform: float4x4, commandEncoder: MTLRenderCommandEncoder) {
         let modelMatrix = parentTransform * node.modelMatrix
-        let viewProjectionMatrix = projectionMatrix * viewMatrix
 
-        var vertexUniforms = VertexUniforms(
-            viewProjectionMatrix: viewProjectionMatrix,
-            modelMatrix: modelMatrix,
-            normalMatrix: modelMatrix.normalMatrix
-        )
-        commandEncoder.setVertexBytes(&vertexUniforms, length: MemoryLayout<VertexUniforms>.size, index: 1)
+        if let mesh = node.mesh, let baseColorTexture = node.material.baseColorTexture {
+            let viewProjectionMatrix = projectionMatrix * viewMatrix
 
-        var fragmentUniforms = FragmentUniforms(cameraWorldPosition: cameraWorldPosition,
-                                                ambientLightColor: float3(0.1, 0.1, 0.1),
-                                                specularColor: node.material.specularColor,
-                                                specularPower: node.material.specularPower,
-                                                light0: lights[0],
-                                                light1: lights[1],
-                                                light2: lights[2])
-        commandEncoder.setFragmentBytes(&fragmentUniforms, length: MemoryLayout<FragmentUniforms>.size, index: 0)
-        commandEncoder.setFragmentTexture(node.material.baseColorTexture, index: 0)
+            var vertexUniforms = VertexUniforms(
+                viewProjectionMatrix: viewProjectionMatrix,
+                modelMatrix: modelMatrix,
+                normalMatrix: modelMatrix.normalMatrix
+            )
+            commandEncoder.setVertexBytes(&vertexUniforms, length: MemoryLayout<VertexUniforms>.size, index: 1)
 
-        if let mesh = node.mesh {
+            var fragmentUniforms = FragmentUniforms(cameraWorldPosition: cameraWorldPosition,
+                                                    ambientLightColor: ambientLightColor,
+                                                    specularColor: node.material.specularColor,
+                                                    specularPower: node.material.specularPower,
+                                                    light0: lights[0],
+                                                    light1: lights[1],
+                                                    light2: lights[2])
+            commandEncoder.setFragmentBytes(&fragmentUniforms, length: MemoryLayout<FragmentUniforms>.size, index: 0)
+            commandEncoder.setFragmentTexture(baseColorTexture, index: 0)
+
             guard let vertexBuffer = mesh.vertexBuffers.first else {
                 fatalError("mesh vertex buffers is empty")
             }
@@ -99,7 +105,7 @@ extension Scene {
         for child in node.children {
             drawRecursive(
                 node: child,
-                parentTransform: parentTransform,
+                parentTransform: modelMatrix,
                 commandEncoder: commandEncoder
             )
         }

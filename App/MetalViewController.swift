@@ -9,28 +9,43 @@
 import Cocoa
 import MetalKit
 
-final class MetalViewController: NSViewController {
-    var device: MTLDevice?
-
-    lazy var mtkView: MTKView = {
-        device = MTLCreateSystemDefaultDevice()
-
-        let mtkView = MTKView(frame: .zero, device: device)
+struct MetalViewComponents {
+    static func createView(withFrame frame: CGRect, device: MTLDevice) -> MTKView {
+        let mtkView = MTKView(frame: frame, device: device)
         mtkView.colorPixelFormat = .bgra8Unorm_srgb
         mtkView.depthStencilPixelFormat = .depth32Float
         mtkView.translatesAutoresizingMaskIntoConstraints = false
         return mtkView
-    }()
+    }
 
-    lazy var renderer: Renderer = {
-        let renderer = Renderer(withView: mtkView, device: device)
+    static func createRenderer(with view: MTKView) -> Renderer {
+        let renderer = Renderer(withView: view)
         return renderer
-    }()
+    }
+}
+
+final class MetalViewController: NSViewController {
+    let device: MTLDevice
+    let mtkView: MTKView
+    let renderer: Renderer
+
+    required init?(coder: NSCoder) {
+        guard let mtlDevice = MTLCreateSystemDefaultDevice() else {
+            fatalError("No metal device was created")
+        }
+
+        device = mtlDevice
+
+        let windowFrame = NSApplication.shared.keyWindow?.frame ?? .zero
+        mtkView = MetalViewComponents.createView(withFrame: windowFrame, device: device)
+        renderer = MetalViewComponents.createRenderer(with: mtkView)
+        super.init(coder: coder)
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if let metalLayer = view.layer as? CAMetalLayer {
+        if let metalLayer = mtkView.layer as? CAMetalLayer {
             metalLayer.framebufferOnly = false
         }
 
@@ -39,8 +54,6 @@ final class MetalViewController: NSViewController {
         mtkView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         mtkView.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
         mtkView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-
-        mtkView.delegate = renderer
     }
 
     override var representedObject: Any? {

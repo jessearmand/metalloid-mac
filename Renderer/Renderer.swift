@@ -28,8 +28,7 @@ struct FragmentUniforms {
 }
 
 final class Renderer: NSObject {
-    let view: MTKView
-    let device: MTLDevice?
+    let device: MTLDevice
     let vertexDescriptor: MDLVertexDescriptor
     let renderPipeline: MTLRenderPipelineState
     let depthStencilState: MTLDepthStencilState
@@ -39,34 +38,32 @@ final class Renderer: NSObject {
     var meshes: [MTKMesh] = []
     var time: Float = 0
 
-    let commandQueue: MTLCommandQueue?
+    let commandQueue: MTLCommandQueue
     var baseColorTexture: MTLTexture?
 
-    static var antCount = 10
+    static var childNodeCount = 10
 
-    init(withView view: MTKView, device: MTLDevice?) {
-        self.view = view
-        self.device = device
-
-        guard let mtlDevice = device else {
-            fatalError("No metal device was created")
+    init(withView view: MTKView) {
+        guard let device = view.device else {
+            fatalError("No device was created for the renderer view")
         }
 
+        self.device = device
+
+        guard let mtlCommandQueue = device.makeCommandQueue() else {
+            fatalError("Failed to make command queue for device")
+        }
+
+        commandQueue = mtlCommandQueue
         vertexDescriptor = Renderer.buildVertexDescriptor()
-        renderPipeline = Renderer.buildPipeline(device: mtlDevice, view: view, vertexDescriptor: vertexDescriptor)
-        depthStencilState = Renderer.buildDepthStencilState(device: mtlDevice)
-        samplerState = Renderer.buildSamplerState(device: mtlDevice)
-        commandQueue = mtlDevice.makeCommandQueue()
-        scene = Renderer.buildScene(device: mtlDevice, vertexDescriptor: vertexDescriptor)
+        renderPipeline = Renderer.buildPipeline(device: device, view: view, vertexDescriptor: vertexDescriptor)
+        samplerState = Renderer.buildSamplerState(device: device)
+        depthStencilState = Renderer.buildDepthStencilState(device: device)
+        scene = Renderer.buildScene(device: device, vertexDescriptor: vertexDescriptor)
 
         super.init()
-    }
 
-    static func buildDepthStencilState(device: MTLDevice) -> MTLDepthStencilState {
-        let depthStencilDescriptor = MTLDepthStencilDescriptor()
-        depthStencilDescriptor.depthCompareFunction = .less
-        depthStencilDescriptor.isDepthWriteEnabled = true
-        return device.makeDepthStencilState(descriptor: depthStencilDescriptor)!
+        view.delegate = self
     }
 
     static func buildVertexDescriptor() -> MDLVertexDescriptor {
@@ -85,55 +82,6 @@ final class Renderer: NSObject {
                                                             bufferIndex: 0)
         vertexDescriptor.layouts[0] = MDLVertexBufferLayout(stride: MemoryLayout<Float>.size * 8)
         return vertexDescriptor
-    }
-
-    static func buildSamplerState(device: MTLDevice) -> MTLSamplerState {
-        let samplerDescriptor = MTLSamplerDescriptor()
-        samplerDescriptor.normalizedCoordinates = true
-        samplerDescriptor.minFilter = .linear
-        samplerDescriptor.magFilter = .linear
-        samplerDescriptor.mipFilter = .linear
-        return device.makeSamplerState(descriptor: samplerDescriptor)!
-    }
-
-    static func buildScene(device: MTLDevice, vertexDescriptor: MDLVertexDescriptor) -> Scene {
-        let bufferAllocator = MTKMeshBufferAllocator(device: device)
-        let textureLoader = MTKTextureLoader(device: device)
-        let options: [MTKTextureLoader.Option : Any] = [.generateMipmaps : true, .SRGB : true]
-
-        let scene = Scene()
-
-        let centralNode = Node(name: "formica_rufa")
-        let modelURL = Bundle.main.url(forResource: "formica_rufa", withExtension: "obj")
-        let asset = MDLAsset(url: modelURL, vertexDescriptor: vertexDescriptor, bufferAllocator: bufferAllocator)
-
-        let light0 = Light(worldPosition: float3( 2,  2, 2), color: float3(1, 0, 0))
-        let light1 = Light(worldPosition: float3(-2,  2, 2), color: float3(0, 1, 0))
-        let light2 = Light(worldPosition: float3( 0, -2, 2), color: float3(0, 0, 1))
-        scene.lights = [light0, light1, light2]
-
-        do {
-            centralNode.mesh = try MTKMesh.newMeshes(asset: asset, device: device).metalKitMeshes.first
-            centralNode.material.baseColorTexture = try textureLoader.newTexture(name: "texture", scaleFactor: 1.0, bundle: nil, options: options)
-            centralNode.material.specularPower = 200
-            centralNode.material.specularColor = float3(0.8, 0.8, 0.8)
-            scene.rootNode.children.append(centralNode)
-        } catch let error {
-            fatalError("\(error)")
-        }
-
-        for index in 1...Renderer.antCount {
-            if let node = try? Node.createChildNode(
-                withName: "formica_rufa_\(index)",
-                modelURL: modelURL,
-                vertexDescriptor: vertexDescriptor,
-                device: device) {
-
-                centralNode.children.append(node)
-            }
-        }
-
-        return scene
     }
 
     static func buildPipeline(device: MTLDevice, view: MTKView, vertexDescriptor: MDLVertexDescriptor) -> MTLRenderPipelineState {
@@ -157,6 +105,81 @@ final class Renderer: NSObject {
             fatalError("Could not create render pipeline state object: \(error)")
         }
     }
+
+    static func buildSamplerState(device: MTLDevice) -> MTLSamplerState {
+        let samplerDescriptor = MTLSamplerDescriptor()
+        samplerDescriptor.normalizedCoordinates = true
+        samplerDescriptor.minFilter = .linear
+        samplerDescriptor.magFilter = .linear
+        samplerDescriptor.mipFilter = .linear
+
+        guard let samplerState = device.makeSamplerState(descriptor: samplerDescriptor) else {
+            fatalError("Failed to make sampler state for device")
+        }
+        return samplerState
+    }
+
+    static func buildDepthStencilState(device: MTLDevice) -> MTLDepthStencilState {
+        let depthStencilDescriptor = MTLDepthStencilDescriptor()
+        depthStencilDescriptor.depthCompareFunction = .less
+        depthStencilDescriptor.isDepthWriteEnabled = true
+
+        guard let depthStencilState = device.makeDepthStencilState(descriptor: depthStencilDescriptor) else {
+            fatalError("Failed to make depth stencil state for device")
+        }
+        return depthStencilState
+    }
+
+    static func buildScene(device: MTLDevice, vertexDescriptor: MDLVertexDescriptor) -> Scene {
+        let bufferAllocator: MTKMeshBufferAllocator = MTKMeshBufferAllocator(device: device)
+        let textureLoader = MTKTextureLoader(device: device)
+
+        let scene = Scene()
+        scene.ambientLightColor = float3(0.1, 0.1, 0.1)
+        let light0 = Light(worldPosition: float3( 5,  5, 0), color: float3(0.3, 0.3, 0.3))
+        let light1 = Light(worldPosition: float3(-5,  5, 0), color: float3(0.3, 0.3, 0.3))
+        let light2 = Light(worldPosition: float3( 0, -5, 0), color: float3(0.3, 0.3, 0.3))
+        scene.lights = [light0, light1, light2]
+
+        let modelURL = Bundle.main.url(forResource: "formica_rufa", withExtension: "obj")
+
+        do {
+            let centralNode = try Node.createChildNode(
+                withName: "formica_rufa",
+                modelURL: modelURL,
+                textureName: "AntTexture",
+                specularPower: 100,
+                specularColor: float3(0.8, 0.8, 0.8),
+                device: device,
+                vertexDescriptor: vertexDescriptor,
+                bufferAllocator: bufferAllocator,
+                textureLoader: textureLoader
+            )
+
+            scene.rootNode.children.append(centralNode)
+
+            for index in 1...Renderer.childNodeCount {
+                let childModelURL = Bundle.main.url(forResource: "formica_rufa", withExtension: "obj")
+                if let node = try? Node.createChildNode(
+                    withName: "formica_rufa_\(index)",
+                    modelURL: childModelURL,
+                    textureName: "AntTexture",
+                    specularPower: 40,
+                    specularColor: float3(0.8, 0.8, 0.8),
+                    device: device,
+                    vertexDescriptor: vertexDescriptor,
+                    bufferAllocator: bufferAllocator,
+                    textureLoader: textureLoader) {
+
+                    centralNode.children.append(node)
+                }
+            }
+        } catch let error {
+            fatalError("\(error)")
+        }
+
+        return scene
+    }
 }
 
 extension Renderer: MTKViewDelegate {
@@ -171,20 +194,23 @@ extension Renderer: MTKViewDelegate {
         time += 1 / Float(view.preferredFramesPerSecond)
         scene.update(time: time, aspectRatio: aspectRatio)
 
-        let commandBuffer = commandQueue?.makeCommandBuffer()
+        guard let commandBuffer = commandQueue.makeCommandBuffer() else {
+            print("command buffer not available")
+            return
+        }
 
         if let renderPassDescriptor = view.currentRenderPassDescriptor, let drawable = view.currentDrawable {
-            renderPassDescriptor.colorAttachments[0].loadAction = .clear
-            renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
-            guard let commandEncoder = commandBuffer?.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
-                fatalError("No command encoder for rendering")
+            renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(1.0, 222.0 / 255.0, 173.00 / 255.0, 1.0)
+            guard let commandEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
+                print("Unable te create command encoder not available.\nMake sure to call endEncoding() before creating another encoder.")
+                return
             }
 
             commandEncoder.setFrontFacing(.counterClockwise)
             commandEncoder.setCullMode(.back)
             commandEncoder.setDepthStencilState(depthStencilState)
-            commandEncoder.setFragmentSamplerState(samplerState, index: 0)
             commandEncoder.setRenderPipelineState(renderPipeline)
+            commandEncoder.setFragmentSamplerState(samplerState, index: 0)
 
             scene.drawRecursive(
                 node: scene.rootNode,
@@ -193,8 +219,8 @@ extension Renderer: MTKViewDelegate {
             )
 
             commandEncoder.endEncoding()
-            commandBuffer?.present(drawable)
-            commandBuffer?.commit()
+            commandBuffer.present(drawable)
+            commandBuffer.commit()
         }
     }
 }
