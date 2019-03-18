@@ -9,8 +9,8 @@
 import MetalKit
 
 struct Light {
-    var worldPosition = float3(0, 0, 0)
-    var color = float3(0, 0, 0)
+    let worldPosition: float3
+    let color: float3
 }
 
 final class Material {
@@ -19,23 +19,42 @@ final class Material {
     var baseColorTexture: MTLTexture?
 }
 
+final class Camera {
+    fileprivate var orbit = float2(0, 0)
+    var cameraAngles = float2(0, 0)
+    var cameraWorldPosition = float3(0, 0, 3)
+
+    func updateAngles() {
+        cameraAngles = float2(
+            cameraAngles.x + (0.001 * orbit.y),
+            cameraAngles.y + (0.001 * orbit.x)
+        )
+    }
+}
+
 final class Scene {
-    var cameraWorldPosition = float3(0, 0, 2)
+    var camera = Camera()
     var viewMatrix = matrix_identity_float4x4
     var projectionMatrix = matrix_identity_float4x4
     var rootNode: Node = Node(name: "Root")
     var ambientLightColor = float3(0, 0, 0)
     var lights: [Light] = []
+
+    func updateOrbit(_ orbit: float2) {
+        camera.orbit = orbit
+    }
 }
 
 extension Scene {
-    func update(time: Float, aspectRatio: Float) {
-        cameraWorldPosition = float3(0, 0, 3)
-        viewMatrix = float4x4(translationBy: -cameraWorldPosition) * float4x4(rotationAbout: float3(1, 0, 0), by: .pi / 6)
-        projectionMatrix = float4x4(perspectiveProjectionFov: Float.pi / 6, aspectRatio: aspectRatio, nearZ: 0.1, farZ: 100)
+    func update(time: Float, aspectRatio: Float, pan: Bool, zoomIn: Bool, zoomOut: Bool) {
+        if pan {
+            camera.updateAngles()
+        }
 
-        let angle = -time
-        rootNode.modelMatrix = float4x4(rotationAbout: float3(0, 1, 0), by: angle)
+        viewMatrix = float4x4(translationBy: -camera.cameraWorldPosition) *
+            float4x4(rotationAbout: float3(1, 0, 0), by: camera.cameraAngles.x) *
+            float4x4(rotationAbout: float3(0, 1, 0), by: camera.cameraAngles.y)
+        projectionMatrix = float4x4(perspectiveProjectionFov: Float.pi / 6, aspectRatio: aspectRatio, nearZ: 0.1, farZ: 100)
 
         if let centralNode = rootNode.nodeNamedRecursive("formica_rufa") {
             centralNode.modelMatrix = float4x4(scaleBy: 0.5)
@@ -75,7 +94,7 @@ extension Scene {
             )
             commandEncoder.setVertexBytes(&vertexUniforms, length: MemoryLayout<VertexUniforms>.size, index: 1)
 
-            var fragmentUniforms = FragmentUniforms(cameraWorldPosition: cameraWorldPosition,
+            var fragmentUniforms = FragmentUniforms(cameraWorldPosition: camera.cameraWorldPosition,
                                                     ambientLightColor: ambientLightColor,
                                                     specularColor: node.material.specularColor,
                                                     specularPower: node.material.specularPower,

@@ -22,9 +22,9 @@ struct FragmentUniforms {
     var ambientLightColor = float3(0, 0, 0)
     var specularColor = float3(1, 1, 1)
     var specularPower = Float(1)
-    var light0 = Light()
-    var light1 = Light()
-    var light2 = Light()
+    var light0 = Light(worldPosition: float3(0), color: float3(0))
+    var light1 = Light(worldPosition: float3(0), color: float3(0))
+    var light2 = Light(worldPosition: float3(0), color: float3(0))
 }
 
 final class Renderer: NSObject {
@@ -42,6 +42,9 @@ final class Renderer: NSObject {
     var baseColorTexture: MTLTexture?
 
     static var childNodeCount = 10
+
+    var touchDown = false
+    var touchDownPoint = CGPoint.zero
 
     init(withView view: MTKView) {
         guard let device = view.device else {
@@ -180,6 +183,26 @@ final class Renderer: NSObject {
 
         return scene
     }
+
+    func touchDragged(at point: CGPoint) {
+        guard touchDown else {
+            return
+        }
+
+        scene.updateOrbit(float2(
+            Float(point.x - touchDownPoint.x),
+            Float(point.y - touchDownPoint.y)
+        ))
+    }
+
+    func touchDown(at point: CGPoint) {
+        touchDown = true
+        touchDownPoint = point
+    }
+
+    func touchUp() {
+        touchDown = false
+    }
 }
 
 extension Renderer: MTKViewDelegate {
@@ -192,7 +215,7 @@ extension Renderer: MTKViewDelegate {
     func draw(in view: MTKView) {
         let aspectRatio = Float(view.drawableSize.width / view.drawableSize.height)
         time += 1 / Float(view.preferredFramesPerSecond)
-        scene.update(time: time, aspectRatio: aspectRatio)
+        scene.update(time: time, aspectRatio: aspectRatio, pan: touchDown, zoomIn: false, zoomOut: false)
 
         guard let commandBuffer = commandQueue.makeCommandBuffer() else {
             print("command buffer not available")

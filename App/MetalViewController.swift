@@ -56,12 +56,18 @@ final class MetalViewController: NSViewController {
         mtkView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
     }
 
-    override var representedObject: Any? {
-        didSet {
-        // Update the view, if already loaded.
-        }
+    override func mouseUp(with event: NSEvent) {
+        renderer.touchUp()
     }
 
+    override func mouseDown(with event: NSEvent) {
+        let mouseDownPoint = event.locationInWindow
+        renderer.touchDown(at: mouseDownPoint)
+    }
 
+    override func mouseDragged(with event: NSEvent) {
+        let draggedPoint = event.locationInWindow
+        renderer.touchDragged(at: draggedPoint)
+    }
 }
 
